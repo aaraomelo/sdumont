@@ -20,14 +20,6 @@ spawn rsync -auvz -e ssh $USER_NAME@$HOST_NAME:~/$REMOTE_PATH/tmp/port.txt ./not
 expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
 send -- "$env(USER_PASSWORD)\r";
 expect "$ ";
-spawn ssh $USER_NAME@$HOST_NAME;
-set timeout -1
-expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
-send -- "$env(USER_PASSWORD)\r";
-expect "$ ";
-send -- "rm -rfv $env(REMOTE_PATH)/tmp\r"
-send -- "exit\r"
-expect "$ ";
 set REMOTE_PORT [exec cat ./notebook/tmp/port.txt]
 spawn ssh -L $LOCAL_PORT:localhost:$REMOTE_PORT $USER_NAME@$HOST_NAME;
 expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
