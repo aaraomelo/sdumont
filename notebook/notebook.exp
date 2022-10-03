@@ -14,7 +14,7 @@ send -- "$env(USER_PASSWORD)\r";
 expect "$ ";
 send -- "cd $env(REMOTE_PATH)\r"
 send -- "source ~/$env(PY_ENV_NAME)/bin/activate\r"
-send -- "bash ./tmp/jupyter.sh $env(PY_ENV_NAME)\r";
+send -- "bash ./tmp/jupyter.sh\r";
 expect -- "is running"
 spawn rsync -auvz -e ssh $USER_NAME@$HOST_NAME:~/$REMOTE_PATH/tmp/port.txt ./notebook/tmp/
 expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
