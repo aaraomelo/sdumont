@@ -1,0 +1,38 @@
+set USER_NAME [lindex $argv 0]
+set HOST_NAME [lindex $argv 1]
+set LOCAL_PORT [lindex $argv 2]
+set REMOTE_PATH [lindex $argv 3]
+set timeout -1
+spawn rsync -auvz --exclude-from "./notebook/upload/exclude-list.txt" -e ssh ./notebook/upload/. $USER_NAME@$HOST_NAME:~/$REMOTE_PATH/tmp/
+expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
+send -- "$env(USER_PASSWORD)\r";
+expect "$ ";
+spawn ssh $USER_NAME@$HOST_NAME;
+set timeout -1
+expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
+send -- "$env(USER_PASSWORD)\r";
+expect "$ ";
+send -- "cd $env(REMOTE_PATH)\r"
+send -- "source ~/$env(PY_ENV_NAME)/bin/activate\r"
+send -- "bash ./tmp/jupyter.sh $env(PY_ENV_NAME)\r";
+expect -- "is running"
+spawn rsync -auvz -e ssh $USER_NAME@$HOST_NAME:~/$REMOTE_PATH/tmp/port.txt ./notebook/tmp/
+expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
+send -- "$env(USER_PASSWORD)\r";
+expect "$ ";
+spawn ssh $USER_NAME@$HOST_NAME;
+set timeout -1
+expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
+send -- "$env(USER_PASSWORD)\r";
+expect "$ ";
+send -- "rm -rfv $env(REMOTE_PATH)/tmp\r"
+send -- "exit\r"
+expect "$ ";
+set REMOTE_PORT [exec cat ./notebook/tmp/port.txt]
+spawn ssh -L $LOCAL_PORT:localhost:$REMOTE_PORT $USER_NAME@$HOST_NAME;
+expect "$env(USER_NAME)@$env(HOST_NAME)'s password:";
+send -- "$env(USER_PASSWORD)\r";
+expect "$ ";
+exec python3 -m webbrowser http://localhost:$LOCAL_PORT
+exec rm -rfv ./notebook/tmp
+interact;

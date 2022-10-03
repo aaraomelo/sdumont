@@ -1,0 +1,21 @@
+set USER_NAME [lindex $argv 0]
+set HOST_NAME [lindex $argv 1]
+set REMOTE_PATH [lindex $argv 2]
+set timeout -1
+spawn ssh $USER_NAME@$HOST_NAME
+expect "$env(USER_NAME)@$env(HOST_NAME)'s password:"
+send -- "$env(USER_PASSWORD)\r"
+expect "$ "
+send -- "python3 -m venv $env(PY_ENV_NAME)\r"
+send -- "source ~/$env(PY_ENV_NAME)/bin/activate\r"
+expect "$ "
+send -- "pip install --upgrade pip\r"
+send -- "python3 -m pip install jupyter\r"
+expect "$ "
+send -- "jupyter notebook password\r"
+expect "Enter password:"
+send -- "$env(USER_PASSWORD)\r"
+expect "Verify password:"
+send -- "$env(USER_PASSWORD)\r"
+expect "Wrote hashed password"
+send -- "mkdir $env(REMOTE_PATH)\r"
